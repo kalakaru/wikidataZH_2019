@@ -174,13 +174,69 @@ Manual run of the bot only for the Quarter Höngg
 
 ## Code
 
+**Function: **
+Description: 
+:return: 
+
 [city_of_zurich.py](https://paws.wmflabs.org/paws/user/Kalakaru/edit/wikidataZH_2019/city_of_zurich.py)
+
+**Function: import_wikidata_kt**
+Description:  Generates a SPARQL query and converts this data to a pandas datadframe
+:return: pd.Dataframe['wikidata_id','date','population','qualifier']
+
+**Function: import_wikidata_qt**
+Description:  Generates a SPARQL query and converts this data to pandas datadframe
+:return: pd.Dataframe['wikidata_id','date','population','qualifier']
+
+**Function: import_kantonZH_api**
+Description:  
+:return: 
+
+**Function: import_geoadmin_wikidata_kt**
+Description: Validation of BFS number: Checks which BFS numbers are active between geo.admin and wikidata
+:return: 
+
+**Function: import_cityZH_api **
+Description: 
+:return: 
+
+**main**
+Description: 
+:return:
 
 [compare_data.py](https://paws.wmflabs.org/paws/user/Kalakaru/edit/wikidataZH_2019/compare_data.py)
 
+**Function: compare_dfs_kt**
+DescriptionThis functions checks all entries from ZH Kanton Data and compares it with the wikidata
+:param df_wikidata:
+:param df_statdata:
+:return: list of index in df_statdata not in df_wikidata --> need to be uploaded to wikidata
+    
+**Function: compare_dfs_gm**
+Description: 
+:return:
+
+**main**
+Description: 
+:return:
+
 [insert_wikidata.py](https://paws.wmflabs.org/paws/user/Kalakaru/edit/wikidataZH_2019/insert_wikidata.py)
 
+**Function: create_reference**
+Description: 
+:return: 
+
+**Function: create_qualifier**
+Description: 
+:return: 
+
+**Function: insert_wikidate**
+Description: 
+:return: 
+
 [ProjectUpdate.ipynb](https://paws.wmflabs.org/paws/user/Kalakaru/notebooks/wikidataZH_2019/ProjectUpdate.ipynb)
+
+
 
 [WikiBot.ipynb](https://paws.wmflabs.org/paws/user/Kalakaru/notebooks/wikidataZH_2019/WikiBot.ipynb)
 

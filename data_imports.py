@@ -6,10 +6,105 @@ import shutil
 from SPARQLWrapper import SPARQLWrapper, JSON, XML
 import logging
 
+def import_cityZH_api():
+    def _query_opendata_zurich(resource_id, parse_record):
+        result = requests.get(
+            f"https://data.stadt-zuerich.ch/api/3/action/datastore_search?limit=1000000&resource_id={resource_id}")
+        records = result.json()["result"]["records"]
+        parsed_rows = []
+        for record in records:
+            parsed_rows.append(parse_record(record))
+        return parsed_rows
 
+    def _parse_population(record):
+        return {"id": record["QuarSort"], "name": record["QuarLang"], "date": f"{record['StichtagDatJahr']}-12-31",
+            "population": record["AnzBestWir"], }
+
+    def _parse_mapping(record):
+        return {"id": record["QNr"], "wikidata_id": record["DataItemNr"]}
+
+    def _apply_wikidata_mapping(mapping_rows, population_rows):
+        mapping_dict = {row["id"]: row["wikidata_id"] for row in mapping_rows}
+        for population_row in population_rows:
+            population_row["wikidata_id"] = mapping_dict[population_row["id"]]
+
+    population_rows = _query_opendata_zurich(_population_resource_id, _parse_population)
+    mapping_rows = _query_opendata_zurich(_mapping_resource_id, _parse_mapping)
+    _apply_wikidata_mapping(mapping_rows, population_rows)
+    return pd.DataFrame(population_rows)
+
+
+def import_kantonZH_api():
+    URL = "https://www.web.statistik.zh.ch:8443/gp/GP?type=EXPORT&indikatoren=133&raumtyp=1&export=csv"
+
+    r = requests.get(url=URL)
+    try:
+        os.mkdir('data')
+    except OSError as ex:
+        print(ex)
+
+    open('data/dataKt.zip', 'wb').write(r.content)
+    zfile = zipfile.ZipFile('data/dataKt.zip')
+    with zipfile.ZipFile('data/dataKt.zip', 'r') as f:
+        names = f.namelist()
+
+    df = pd.read_csv(zfile.open(names[0]), sep=';')
+    df = df.iloc[:, :-1]
+    df = pd.melt(df, id_vars=[df.columns[0],df.columns[1]], value_vars=df.columns[2:])
+    df = df.rename(columns={"value": "population", "variable":"date"})
+    df['date'] = df['date'].astype('str')+ '-12-31'
+
+    zfile.close()
+    shutil.rmtree('data')
+    logging.info('Import Kanton data: extracted {0} entries successful'.format(df['BFS_NR'].count()))
+    return df
+
+def import_geoadmin_wikidata_kt():
+    """
+    Validation of BFS number: Checks which BFS numbers are active between geo.admin and wikidata
+    :return:
+    """
+    endpoint_url = "https://ld.geo.admin.ch/query"
+
+    query = """
+    PREFIX schema: <http://schema.org/>
+    PREFIX gn: <http://www.geonames.org/ontology#>
+    PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+    PREFIX wd: <http://www.wikidata.org/entity/>
+    PREFIX wikibase: <http://wikiba.se/ontology#>
+    PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+    PREFIX dct: <http://purl.org/dc/terms/>
+    PREFIX st: <https://ld.geo.admin.ch/def/>
+
+    select ?Municipality ?Name ?bfs ?wikidata_id
+    where{
+    ?Municipality gn:featureCode gn:A.ADM3 .
+    ?Municipality schema:name ?Name .
+    ?Municipality gn:population?Population .
+    ?Municipality st:bfsNumber ?bfs .
+    ?Municipality dct:issued ?date .
+    ?Municipality schema:validUntil ?validuntil .
+    ?Municipality gn:parentADM1 ?InCanton .
+    ?InCanton schema:name ?CantonName .
+    #?Municipality geo:hasGeometry ?Geometry .
+    #?Geometry geo:asWKT ?WKT .
+    
+    FILTER (now()<=?validuntil)
+    FILTER (?CantonName = 'Zürich')
+
+    {SELECT DISTINCT (xsd:integer(?bfsWD) AS ?bfs)?wikidata_id ?Image WHERE {
+    SERVICE <https://query.wikidata.org/bigdata/namespace/wdq/sparql>
+
+    {
+    ?wikidata_id wdt:P771 ?bfsWD .
+    ?wikidata_id wdt:P31 wd:Q70208 .
+    #OPTIONAL { ?wikidata_id wdt:P18 ?Image. } .
+    }}}}
+    """
+    
 def import_wikidata_kt():
     """
-    Generates a SPARQL query and converts this data to pandas datadframe
+    Generates a SPARQL query and converts this data to a pandas datadframe
     :return: pd.Dataframe['wikidata_id','date','population','qualifier']
     """
     # Q70208 Gemeinde
@@ -102,76 +197,6 @@ def import_wikidata_qt():
     logging.info('Import Wikidata: extracted {0} entries successful'.format(pop['date'].count()))
     return pop
 
-
-def import_kantonZH_api():
-    URL = "https://www.web.statistik.zh.ch:8443/gp/GP?type=EXPORT&indikatoren=133&raumtyp=1&export=csv"
-
-    r = requests.get(url=URL)
-    try:
-        os.mkdir('data')
-    except OSError as ex:
-        print(ex)
-
-    open('data/dataKt.zip', 'wb').write(r.content)
-    zfile = zipfile.ZipFile('data/dataKt.zip')
-    with zipfile.ZipFile('data/dataKt.zip', 'r') as f:
-        names = f.namelist()
-
-    df = pd.read_csv(zfile.open(names[0]), sep=';')
-    df = df.iloc[:, :-1]
-    df = pd.melt(df, id_vars=[df.columns[0],df.columns[1]], value_vars=df.columns[2:])
-    df = df.rename(columns={"value": "population", "variable":"date"})
-    df['date'] = df['date'].astype('str')+ '-12-31'
-
-    zfile.close()
-    shutil.rmtree('data')
-    logging.info('Import Kanton data: extracted {0} entries successful'.format(df['BFS_NR'].count()))
-    return df
-
-
-def import_geoadmin_wikidata_kt():
-    """
-    Validation of BFS number: Checks which BFS numbers are active between geo.admin and wikidata
-    :return:
-    """
-    endpoint_url = "https://ld.geo.admin.ch/query"
-
-    query = """
-    PREFIX schema: <http://schema.org/>
-    PREFIX gn: <http://www.geonames.org/ontology#>
-    PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-    PREFIX wd: <http://www.wikidata.org/entity/>
-    PREFIX wikibase: <http://wikiba.se/ontology#>
-    PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-    PREFIX dct: <http://purl.org/dc/terms/>
-    PREFIX st: <https://ld.geo.admin.ch/def/>
-
-    select ?Municipality ?Name ?bfs ?wikidata_id
-    where{
-    ?Municipality gn:featureCode gn:A.ADM3 .
-    ?Municipality schema:name ?Name .
-    ?Municipality gn:population?Population .
-    ?Municipality st:bfsNumber ?bfs .
-    ?Municipality dct:issued ?date .
-    ?Municipality schema:validUntil ?validuntil .
-    ?Municipality gn:parentADM1 ?InCanton .
-    ?InCanton schema:name ?CantonName .
-    #?Municipality geo:hasGeometry ?Geometry .
-    #?Geometry geo:asWKT ?WKT .
-    
-    FILTER (now()<=?validuntil)
-    FILTER (?CantonName = 'Zürich')
-
-    {SELECT DISTINCT (xsd:integer(?bfsWD) AS ?bfs)?wikidata_id ?Image WHERE {
-    SERVICE <https://query.wikidata.org/bigdata/namespace/wdq/sparql>
-
-    {
-    ?wikidata_id wdt:P771 ?bfsWD .
-    ?wikidata_id wdt:P31 wd:Q70208 .
-    #OPTIONAL { ?wikidata_id wdt:P18 ?Image. } .
-    }}}}
-    """
-
     def get_results(endpoint_url, query):
         sparql = SPARQLWrapper(endpoint_url,
                                agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.75 Safari/537.36")
@@ -197,35 +222,6 @@ def import_geoadmin_wikidata_kt():
 
 _population_resource_id = "570f006e-2f2a-4b1f-9233-c4916c753475"
 _mapping_resource_id = "0090f2ed-1df9-4953-9561-5d413fd74758"
-
-
-def import_cityZH_api():
-    def _query_opendata_zurich(resource_id, parse_record):
-        result = requests.get(
-            f"https://data.stadt-zuerich.ch/api/3/action/datastore_search?limit=1000000&resource_id={resource_id}")
-        records = result.json()["result"]["records"]
-        parsed_rows = []
-        for record in records:
-            parsed_rows.append(parse_record(record))
-        return parsed_rows
-
-    def _parse_population(record):
-        return {"id": record["QuarSort"], "name": record["QuarLang"], "date": f"{record['StichtagDatJahr']}-12-31",
-            "population": record["AnzBestWir"], }
-
-    def _parse_mapping(record):
-        return {"id": record["QNr"], "wikidata_id": record["DataItemNr"]}
-
-    def _apply_wikidata_mapping(mapping_rows, population_rows):
-        mapping_dict = {row["id"]: row["wikidata_id"] for row in mapping_rows}
-        for population_row in population_rows:
-            population_row["wikidata_id"] = mapping_dict[population_row["id"]]
-
-    population_rows = _query_opendata_zurich(_population_resource_id, _parse_population)
-    mapping_rows = _query_opendata_zurich(_mapping_resource_id, _parse_mapping)
-    _apply_wikidata_mapping(mapping_rows, population_rows)
-    return pd.DataFrame(population_rows)
-
 
 def main():
     # Database request of city/kanton level
