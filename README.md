@@ -174,15 +174,15 @@ Manual run of the bot only for the Quarter Höngg
 
 ## Code
 
-(city_of_zurich.py)[https://paws.wmflabs.org/paws/user/Kalakaru/edit/wikidataZH_2019/city_of_zurich.py]
+[city_of_zurich.py](https://paws.wmflabs.org/paws/user/Kalakaru/edit/wikidataZH_2019/city_of_zurich.py)
 
-(compare_data.py)[https://paws.wmflabs.org/paws/user/Kalakaru/edit/wikidataZH_2019/compare_data.py]
+[compare_data.py](https://paws.wmflabs.org/paws/user/Kalakaru/edit/wikidataZH_2019/compare_data.py)
 
-(insert_wikidata.py)[https://paws.wmflabs.org/paws/user/Kalakaru/edit/wikidataZH_2019/insert_wikidata.py]
+[insert_wikidata.py](https://paws.wmflabs.org/paws/user/Kalakaru/edit/wikidataZH_2019/insert_wikidata.py)
 
-(ProjectUpdate.ipynb)[https://paws.wmflabs.org/paws/user/Kalakaru/notebooks/wikidataZH_2019/ProjectUpdate.ipynb]
+[ProjectUpdate.ipynb](https://paws.wmflabs.org/paws/user/Kalakaru/notebooks/wikidataZH_2019/ProjectUpdate.ipynb)
 
-(WikiBot.ipynb)[https://paws.wmflabs.org/paws/user/Kalakaru/notebooks/wikidataZH_2019/WikiBot.ipynb]
+[WikiBot.ipynb](https://paws.wmflabs.org/paws/user/Kalakaru/notebooks/wikidataZH_2019/WikiBot.ipynb)
 
 
 
