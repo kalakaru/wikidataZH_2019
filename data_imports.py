@@ -136,21 +136,21 @@ def import_wikidata_kantonZH():
     # P1082 Einwohner
     # P585 Zeitmpunkt
     query = """
-        SELECT ?bfs_id ?wikidata_id ?date ?population ?qualifier ?refurl ?refpublisher
-          WHERE
-          {
-          ?wikidata_id wdt:P771 ?bfs_id.
-          ?wikidata_id wdt:P31 wd:Q70208.
-          ?wikidata_id wdt:P131 wd:Q11943.
-          ?wikidata_id p:P1082 ?myvalue.
-          ?myvalue pq:P585 ?date.
-          ?myvalue ps:P1082 ?population.
-          ?myvalue wikibase:rank ?qualifier.
-          ?myvalue prov:wasDerivedFrom ?refnode.
-          OPTIONAL{?refnode pr:P854 ?refurl.}
-          OPTIONAL{?refnode pr:P123 ?refpublisher.}
-          SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
-          }
+        SELECT ?bfs_id ?wikidata_id ?date ?population ?qualifier (COALESCE(?refurl, "NA") as ?refurl) (COALESCE(?refpublisher, "NA") as ?refpublisher)
+            WHERE
+            {
+              ?wikidata_id wdt:P771 ?bfs_id.
+              ?wikidata_id wdt:P31 wd:Q70208.
+              ?wikidata_id wdt:P131 wd:Q11943.
+              ?wikidata_id p:P1082 ?myvalue.
+              ?myvalue pq:P585 ?date.
+              ?myvalue ps:P1082 ?population.
+              ?myvalue wikibase:rank ?qualifier.
+              ?myvalue prov:wasDerivedFrom ?refnode.
+              OPTIONAL{?refnode pr:P854 ?refurl.}
+              OPTIONAL{?refnode pr:P123 ?refpublisher.}
+              SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+            }
         order by ?bfs_id ?date
         """
 
@@ -169,7 +169,8 @@ def import_wikidata_kantonZH():
             'date': p['date']['value'],
             'population': p['population']['value'],
             'qualifier': p['qualifier']['value'].replace('http://wikiba.se/ontology#', ''),
-            'refURL' : p['refURL']['value'],
+            'refurl' : p['refurl']['value'],
+            'refpublisher' : p['refpublisher']['value'],
         }
         population.append(mon)
 
