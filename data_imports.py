@@ -37,12 +37,15 @@ def import_kantonZH_api():
     logging.info('Import Kanton data: extracted {0} entries successful'.format(df['BFS_NR'].count()))
     return df
 
-def import_StadtZH_api():
+def import_stadtZH_api():
     """
     Description: import data from city Zürich API 
     Format: pandas dataframe
     return: pd.Dataframe['BFS_NR','GEBIET_NAME','date','population']
     """
+    
+    _population_resource_id = "570f006e-2f2a-4b1f-9233-c4916c753475"
+    _mapping_resource_id = "0090f2ed-1df9-4953-9561-5d413fd74758"
     
     def _query_opendata_zurich(resource_id, parse_record):
         result = requests.get(
@@ -123,21 +126,18 @@ def import_swisstopowikidata_kantonZH():
     results = get_results(endpoint_url, query)
     result = results["results"]["bindings"]
 
-    population = []
+    mydata = []
     for p in result:
         mon = {'Name': p['Name']['value'],
                'bfs': p['bfs']['value'],
                'wikidata_id': p['wikidata_id']['value'].replace('http://www.wikidata.org/entity/', '')
                }
-        population.append(mon)
+        mydata.append(mon)
 
-    pop = pd.DataFrame(population)
-    pop['bfs'] = pop['bfs'].astype(int)
+    df = pd.DataFrame(mydata)
+    df['bfs'] = df['bfs'].astype(int)
 
-    return pop
-
-_population_resource_id = "570f006e-2f2a-4b1f-9233-c4916c753475"
-_mapping_resource_id = "0090f2ed-1df9-4953-9561-5d413fd74758"
+    return df
 
 def import_wikidata_kantonZH():
     """
@@ -195,7 +195,7 @@ def import_wikidata_kantonZH():
     logging.info('Import Wikidata: extracted {0} entries successful'.format(pop['date'].count()))
     return pop
 
-def import_wikidata_StadtZH():
+def import_wikidata_stadtZH():
     """
     Description: wikidata SPARQL Query to get population of city Zürich
     Format: pandas dataframe
@@ -246,7 +246,7 @@ def main():
     # API
     
     print("Stadt API")
-    data_frame = import_StadtZH_api().head()
+    data_frame = import_stadtZH_api().head()
     print(data_frame)
     
     print("Kanton API ")
@@ -264,8 +264,10 @@ def main():
     print(data_frame)
     
     print("Stadt Wikidata")
-    data_frame = import_wikidata_StadtZH().head()
+    data_frame = import_wikidata_stadtZH().head()
     print(data_frame)
     
+    
+
 if __name__ == "__main__":
     main()
