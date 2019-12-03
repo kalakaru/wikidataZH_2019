@@ -4,42 +4,42 @@ import numpy as np
 from data_imports import *
 
 
-def compare_kanton(df_wikidata, df_statdata):
+def compare_kanton(df_wikidata, df_api):
     """
     This functions checks all entries from ZH Kanton Data and compares it with the wikidata
     :param df_wikidata:
     :param df_statdata:
     :return: list of index in df_statdata not in df_wikidata --> need to be uploaded to wikidata
     """
-    logging.info('Compare: {0} stat_entries with {1} wikidate_entries'.format(df_statdata['date'].count,
+    logging.info('Compare: {0} stat_entries with {1} wikidate_entries'.format(df_api['date'].count,
                                                                               df_wikidata['date'].count))
 
     # add column 'check'
-    df_statdata['check'] = df_statdata['date'].astype(str) + '---' + df_statdata['BFS_NR'].astype(str)
+    df_api['check'] = df_api['date'].astype(str) + '---' + df_api['BFS_NR'].astype(str)
     df_wikidata['check'] = df_wikidata['date'].astype(str) + '---' + df_wikidata['bfs_id'].astype(str)
     
     print("NOT IN THE DATASET")
-    print(df_statdata[(df_statdata['check'].isin(df_wikidata['check']) == False)]['date'].astype(str).str[:4].unique())
-    #return df_statdata[(df_statdata['check'].isin(df_wikidata['check']) == False)].index.tolist()
+    print(df_api[(df_api['check'].isin(df_wikidata['check']) == False)]['date'].astype(str).str[:4].unique())
+    #return df_api[(df_api['check'].isin(df_wikidata['check']) == False)].index.tolist()
 
 
-def compare_stadt(df_wikidata, df_statdata):
+def compare_stadt(df_wikidata, df_api):
     """
     This functions checks all entries from ZH Kanton Data and compares it with the wikidata
     :param df_wikidata:
     :param df_statdata:
     :return: list of index in df_statdata not in df_wikidata --> need to be uploaded to wikidata
     """
-    logging.info('Compare: {0} stat_entries with {1} wikidate_entries'.format(df_statdata['date'].count,
+    logging.info('Compare: {0} stat_entries with {1} wikidate_entries'.format(df_api['date'].count,
                                                                               df_wikidata['date'].count))
 
     # add column 'check'
-    df_statdata['check'] = df_statdata['date'].astype(str) + '---' + df_statdata['wikidata_id'].astype(str)
+    df_api['check'] = df_api['date'].astype(str) + '---' + df_api['wikidata_id'].astype(str)
     df_wikidata['check'] = df_wikidata['date'].astype(str) + '---' + df_wikidata['wikidata_id'].astype(str)
     
     print("NOT IN THE DATASET")
-    print(df_statdata[(df_statdata['check'].isin(df_wikidata['check']) == False)]['date'].astype(str).str[:4].unique())
-    #return df_statdata[(df_statdata['check'].isin(df_wikidata['check']) == False)].index.tolist()
+    print(df_api[(df_api['check'].isin(df_wikidata['check']) == False)]['date'].astype(str).str[:4].unique())
+    #return df_api[(df_api['check'].isin(df_wikidata['check']) == False)].index.tolist()
 
 def main():
     
