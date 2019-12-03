@@ -31,7 +31,7 @@ def import_kantonZH_api():
     logging.info('Import Kanton data: extracted {0} entries successful'.format(df['BFS_NR'].count()))
     return df
 
-def import_cityZH_api():
+def import_StadtZH_api():
     def _query_opendata_zurich(resource_id, parse_record):
         result = requests.get(
             f"https://data.stadt-zuerich.ch/api/3/action/datastore_search?limit=1000000&resource_id={resource_id}")
@@ -58,7 +58,7 @@ def import_cityZH_api():
     _apply_wikidata_mapping(mapping_rows, population_rows)
     return pd.DataFrame(population_rows)
 
-def import_geoadminwikidata_kantonZH():
+def import_swisstopowikidata_kantonZH():
     """
     Validation of BFS number: Checks which BFS numbers are active between geo.admin and wikidata
     :return:
@@ -181,7 +181,7 @@ def import_wikidata_kantonZH():
     logging.info('Import Wikidata: extracted {0} entries successful'.format(pop['date'].count()))
     return pop
 
-def import_wikidata_cityZH():
+def import_wikidata_StadtZH():
     """
     Generates a SPARQL query and converts this data to pandas datadframe
     :return: pd.Dataframe['wikidata_id','date','population','qualifier']
@@ -229,21 +229,32 @@ def import_wikidata_cityZH():
 
 
 def main():
-    # Database request of city/kanton level
-    data_frame = import_cityZH_api().head()
-    print("City API")
-    print(data_frame)
-    data_frame = import_kantonZH_api().head()
-    print("Kanton API ")
-    print(data_frame)
-    # Network requests
-    data_frame = import_geoadminwikidata_kantonZH().head()
-    print("Kanton geo.admin.data")
-    print(data_frame)
-    data_frame = import_wikidata_kantonZH().head()
-    print("Kanton Wikidata")
-    print(data_frame)
 
+    # API
+    
+    print("Stadt API")
+    data_frame = import_StadtZH_api().head()
+    print(data_frame)
+    
+    print("Kanton API ")
+    data_frame = import_kantonZH_api().head()
+    print(data_frame)
+    
+    # Linked Data
+    
+    print("Kanton geo.admin.data")
+    data_frame = import_swisstopowikidata_kantonZH().head()
+    print(data_frame)
+    
+    print("Kanton Wikidata")
+    data_frame = import_wikidata_kantonZH().head()
+    print(data_frame)
+    
+    print("Stadt Wikidata")
+    data_frame = import_wikidata_StadtZH().head()
+    print(data_frame)
+    
+    
 
 if __name__ == "__main__":
     main()
