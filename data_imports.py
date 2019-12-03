@@ -7,9 +7,15 @@ from SPARQLWrapper import SPARQLWrapper, JSON, XML
 import logging
 
 def import_kantonZH_api():
+    """
+    Description: import data from Kanton Zürich API 
+    Format: pandas dataframe
+    return: pd.Dataframe['date','id','name','population','wikidata_id']
+    """
+        
     URL = "https://www.web.statistik.zh.ch:8443/gp/GP?type=EXPORT&indikatoren=133&raumtyp=1&export=csv"
-
     r = requests.get(url=URL)
+    
     try:
         os.mkdir('data')
     except OSError as ex:
@@ -32,6 +38,12 @@ def import_kantonZH_api():
     return df
 
 def import_StadtZH_api():
+    """
+    Description: import data from city Zürich API 
+    Format: pandas dataframe
+    return: pd.Dataframe['BFS_NR','GEBIET_NAME','date','population']
+    """
+    
     def _query_opendata_zurich(resource_id, parse_record):
         result = requests.get(
             f"https://data.stadt-zuerich.ch/api/3/action/datastore_search?limit=1000000&resource_id={resource_id}")
@@ -60,8 +72,9 @@ def import_StadtZH_api():
 
 def import_swisstopowikidata_kantonZH():
     """
-    Validation of BFS number: Checks which BFS numbers are active between geo.admin and wikidata
-    :return:
+    Description: returns BFS-ID and Wikidate-ID
+    Format: pandas dataframe
+    return: pd.Dataframe['Name','bfs','wikidata_id']
     """
     endpoint_url = "https://ld.geo.admin.ch/query"
 
@@ -128,8 +141,9 @@ _mapping_resource_id = "0090f2ed-1df9-4953-9561-5d413fd74758"
 
 def import_wikidata_kantonZH():
     """
-    Generates a SPARQL query and converts this data to pandas datadframe
-    :return: pd.Dataframe['wikidata_id','date','population','qualifier']
+    Description: wikidata SPARQL Query to get population of Kanton Zürich
+    Format: pandas dataframe
+    return: pd.Dataframe['bfs_id','date','population','qualifier','refurl','refpublisher']
     """
     # Q70208 Gemeinde
     # Q11943 Kanton Zürich
@@ -183,8 +197,9 @@ def import_wikidata_kantonZH():
 
 def import_wikidata_StadtZH():
     """
-    Generates a SPARQL query and converts this data to pandas datadframe
-    :return: pd.Dataframe['wikidata_id','date','population','qualifier']
+    Description: wikidata SPARQL Query to get population of city Zürich
+    Format: pandas dataframe
+    return: pd.Dataframe['date','popultion','qualifier','wikidata_id']
     """
     # Q19644586 Quartier
     # P1082 Einwohner
@@ -226,8 +241,6 @@ def import_wikidata_StadtZH():
     logging.info('Import Wikidata: extracted {0} entries successful'.format(pop['date'].count()))
     return pop
 
-
-
 def main():
 
     # API
@@ -254,7 +267,5 @@ def main():
     data_frame = import_wikidata_StadtZH().head()
     print(data_frame)
     
-    
-
 if __name__ == "__main__":
     main()

@@ -180,25 +180,26 @@ Description:
 
 [city_of_zurich.py](https://paws.wmflabs.org/paws/user/Kalakaru/edit/wikidataZH_2019/city_of_zurich.py)
 
-**Function: import_wikidata_kt**
-Description:  Generates a SPARQL query and converts this data to a pandas datadframe
-:return: pd.Dataframe['wikidata_id','date','population','qualifier']
 
-**Function: import_wikidata_qt**
-Description:  Generates a SPARQL query and converts this data to pandas datadframe
-:return: pd.Dataframe['wikidata_id','date','population','qualifier']
+**Function: import_StadtZH_api **
+Description: 
+:return: 
 
 **Function: import_kantonZH_api**
 Description:  
 :return: 
 
-**Function: import_geoadmin_wikidata_kt**
+**Function: import_swisstopowikidata_kantonZH**
 Description: Validation of BFS number: Checks which BFS numbers are active between geo.admin and wikidata
-:return: 
+:return:
 
-**Function: import_cityZH_api **
-Description: 
-:return: 
+**Function: import_wikidata_kantonZH**
+Description:  Generates a SPARQL query and converts this data to a pandas datadframe
+:return: pd.Dataframe['wikidata_id','date','population','qualifier']
+
+**Function: import_wikidata_StadtZH**
+Description:  Generates a SPARQL query and converts this data to pandas datadframe
+:return: pd.Dataframe['wikidata_id','date','population','qualifier']
 
 **main**
 Description: 
