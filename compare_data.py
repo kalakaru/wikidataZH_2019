@@ -11,15 +11,14 @@ def compare_kanton(df_wikidata, df_api):
     :param df_statdata:
     :return: list of index in df_statdata not in df_wikidata --> need to be uploaded to wikidata
     """
-    logging.info('Compare: {0} stat_entries with {1} wikidate_entries'.format(df_api['date'].count,
-                                                                              df_wikidata['date'].count))
-
+    
     # add column 'check'
     df_api['check'] = df_api['date'].astype(str) + '---' + df_api['BFS_NR'].astype(str)
     df_wikidata['check'] = df_wikidata['date'].astype(str) + '---' + df_wikidata['bfs_id'].astype(str)
     
-    print("NOT IN THE DATASET")
-    print(df_api[(df_api['check'].isin(df_wikidata['check']) == False)]['date'].astype(str).str[:4].unique())
+    print("API Number not in Wikidata is stored in test.csv")
+    t = df_api[(df_api['check'].isin(df_wikidata['check']) == False)]['date']
+    t.to_csv("test.tsv", sep='\t')
     #return df_api[(df_api['check'].isin(df_wikidata['check']) == False)].index.tolist()
 
 
@@ -37,8 +36,9 @@ def compare_stadt(df_wikidata, df_api):
     df_api['check'] = df_api['date'].astype(str) + '---' + df_api['wikidata_id'].astype(str)
     df_wikidata['check'] = df_wikidata['date'].astype(str) + '---' + df_wikidata['wikidata_id'].astype(str)
     
-    print("NOT IN THE DATASET")
+    print("API Number not in Wikidata")
     print(df_api[(df_api['check'].isin(df_wikidata['check']) == False)]['date'].astype(str).str[:4].unique())
+    print(df_api[(df_api['check'].isin(df_wikidata['check']) == False)]['date'])
     #return df_api[(df_api['check'].isin(df_wikidata['check']) == False)].index.tolist()
 
 def main():
